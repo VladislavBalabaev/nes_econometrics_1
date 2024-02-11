@@ -1,5 +1,7 @@
+library(car)
 library(lmtest)
 library(sandwich)
+
 
 setwd("problem_set_3/")
 
@@ -32,12 +34,28 @@ confint(reg5, vcov. = vcovHC(reg5, type = "HC1"))["female", ]
 
 
 # 5.d
+# since our model is logarithmic in dependent variable -> relative means minus.
+# since our estimated model is linear in the right part, then our marginal effect of any number of years are being reduced and the only difference in effect is in having HS diploma or not, so the test that 'this' marginal value is zero is equivalent to simple t-test of HS diploma
+estimates5["hsdipl", ]
 
 
 # 5.e
+v <- 12 * estimates5["yrseduc", "Estimate"] + estimates5["hsdipl", "Estimate"] -
+  10 * estimates5["yrseduc", "Estimate"] # %
+v
 
 
 # 5.f
+vcovhc5 <- vcovHC(reg5, type = "HC1")
+
+se <- (
+  vcovhc5["yrseduc", "yrseduc"] * (2 ^ 2) +
+    vcovhc5["hsdipl", "hsdipl"] +
+    vcovhc5["yrseduc", "hsdipl"] * 2
+) ^ (1 / 2)
+
+c(v - se, v, v + se)
+
 
 
 # 6
@@ -89,7 +107,6 @@ estimates_cubic[c("age", "I(age^2)", "I(age^3)"), ]
 
 
 # 6.e
-library(car)
 linearHypothesis(reg_cubic, c("I(age^2) = 0", "I(age^3) = 0"))
 # the relationship is qubic.
 
